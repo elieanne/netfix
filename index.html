@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+
+<title>reveal.js - The HTML Presentation Framework</title>
+
+<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+<meta name="author" content="Hakim El Hattab">
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+<link rel="stylesheet" href="reveal.js-3.1.0/css/reveal.css">
+<link rel="stylesheet" href="reveal.js-3.1.0/css/theme/blood.css" id="theme">
+
+<!-- Code syntax highlighting -->
+<link rel="stylesheet" href="reveal.js-3.1.0/lib/css/zenburn.css">
+
+<!-- Printing and PDF exports -->
+<script>
+var link = document.createElement( 'link' );
+link.rel = 'stylesheet';
+link.type = 'text/css';
+link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+document.getElementsByTagName( 'head' )[0].appendChild( link );
+</script>
+
+<!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+<style>
+  .red { color: red; }
+  .lime { color: lime; }
+  .orange { color: orange; }
+</style>
+</head>
+
+<body>
+
+<div class="reveal">
+
+  <!-- Any section element inside of this container is displayed as a slide -->
+  <div class="slides">
+    <section>
+      <h1>Let's Make a Netflix</h1>
+      <h3>An Intro to Streaming Media on the Web</h3>
+      <p>
+      <small><a href="https://nickdesaulniers.github.io/">Nick Desaulniers</a> / <a href="http://twitter.com/lostoracle">@LostOracle</a></small>
+      </p>
+    </section>
+    <section>
+      <h2>Topics</h2>
+      <p class="fragment">Terminology</p>
+      <p class="fragment">Transcoding</p>
+      <p class="fragment">Audio &amp; Video tags</p>
+      <p class="fragment">MSE</p>
+      <p class="fragment">DASH</p>
+    </section>
+    <section>
+      <section>
+        <h2>Terminology</h2>
+      </section>
+      <section>
+        <h2>Pulse Coded Modulation</h2>
+        Audio PCM streams are made up of a sample rate: how frequently the
+        amplitude is measured (ex. 320 Mbps), and bit depth: how many
+        possible digital values can be represented by one sample.
+      </section>
+      <section>
+        <h2>Compression</h2>
+        The Digital to Audio Converter (DAC) on your computer's soundcard
+        expects PCM (HD Audio or AC'97), but PCM is large and therefore
+        expensive to store and transmit.
+      </section>
+      <section>
+        <h2>Lossy vs Lossless Compression</h2>
+        <p>
+          Lossless compression allows us to more efficiently represent the
+          same uncompressed data and also sounds fantastic on your expensive
+          audio equipment.
+        </p>
+        <p>
+          Lossy compression sacrifices fidelity for
+          size and allows you to store thousands of songs on your phone.
+        </p>
+      </section>
+      <section>
+        <h2>Lossy vs Lossless Compression</h2>
+        <p>Lossless to lossy is a one way conversion</p>
+        <p>You cannot get back fidelity once it's been thrown away</p>
+        <img src="enhance.png" alt="enhance"/>
+      </section>
+      <section>
+        <h2>Codecs</h2>
+        Codecs are how the media data is represented, or encoded.  Some
+        codecs are lossy like MP3, some are lossless like FLAC.  Most codecs
+        are encumbered by patents. :(
+      </section>
+      <section>
+        <h2>Containers</h2>
+        Containers such as WAV, MP4, and Ogg represent the meta-data of a
+        media file such as artist or duration, subtitles, etc.  Containers,
+        in addition to their meta-data, will contain streams of audio or
+        video encoded via a specific codec.
+      </section>
+      <section>
+        <h2>File Extension</h2>
+        Sometimes used by OS to determine what program should open what file.
+        Unreliable; anyone can change the file extension of a given file, but
+        that does not change the encoding (how the bits are arranged) or the
+        container (how the meta-data and streams are packaged).
+      </section>
+      <section>
+        <h2>Playlists</h2>
+        Playlist files are used by media playing applications to play
+        subsequent mediums.  Browsers do not understand playlist files, but
+        playlist files can easily be
+        <a href="https://github.com/nickdesaulniers/javascript-playlist-parser">parsed</a>
+        in JavaScript.
+      </section>
+      <section>
+        <h2>Protocol</h2>
+        How are the bits transferred from one machine to another?  On the
+        Web, HTTP is the most familiar, but there are other protocols used
+        when streaming media such as RTSP and ICY.
+      </section>
+      <section>
+        <h2>Know Your Terms</h2>
+        Codecs, containers, file extensions, playlist files, and protocols
+        are not equivalent.  Ex. Media A could be aac encoded, in an MP4
+        container, with a .m4a extension, listed in a m3u playlist file,
+        served over ICY.
+      </section>
+      <section>
+        <h2>Hardware Acceleration</h2>
+        Media can be decoded in software or in hardware.  Application
+        Specific Integrated Circuits (ASICs) can be faster and more power
+        efficient than General Purpose Processors.  Mobile friendly.  They
+        can also be patent encumbered.
+      </section>
+    </section>
+    <section>
+      <section>
+        <h2>Transcoding</h2>
+      </section>
+      <section>
+        <h2>Why?</h2>
+        <ul>
+          <li>Not all browsers support all codecs.</li>
+          <li>A lossy to lossy conversion is preferable to asking the user to install
+          a different browser.</li>
+          <li>If storage is cheaper than bandwidth, also preferable.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>FFmpeg</h2>
+        <p>Your free and Open Source transcoding swiss army knife.</p>
+        <pre>
+          <code>
+  $ ffmpeg -h full 2>/dev/null| wc -l
+  5424
+          </code>
+        </pre>
+      </section>
+      <section>
+        <h2>The Extreme Basics</h2>
+        <pre><code class="bash">
+  ffmpeg -i input.wav output.mp3
+  ffmpeg -i input.y4m -i input.wav output.webm
+        </code></pre>
+      </section>
+      <section>
+        <h2>Codec support</h2>
+        <p><code class="lime">ffmpeg -codecs</code> will tell you if you can decode from one codec and encode into another.</p>
+        <pre><code class="lasso">
+  $ ffmpeg -codecs
+  DEV.LS h264  H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 (decoders: h264 h264_vda ) (encoders: libx264 libx264rgb )
+  DEV.L. vp8   On2 VP8 (decoders: vp8 libvpx ) (encoders: libvpx )
+  DEV.L. vp9   Google VP9 (decoders: vp9 libvpx-vp9 ) (encoders: libvpx-vp9 )
+  DEA.L. mp3   MP3 (MPEG audio layer 3) (decoders: mp3 mp3float ) (encoders: libmp3lame )
+  DEA.L. opus  Opus (Opus Interactive Audio Codec) (decoders: opus libopus ) (encoders: libopus )
+        </code></pre>
+        <p class="fragment">If you're missing an expected encoder/decoder, you probably need to install a shared library and rebuild/reinstall ffmpeg.  Not fun.</p>
+      </section>
+      <section>
+        <h2>FFmpeg</h2>
+        <p><code class="lime">ffmpeg -i input.file</code> will tell you a lot about a file.</p>
+        <!-- idk what lasso is, highlight.js makes it look fun! -->
+        <pre><code class="lasso">
+  $ ffmpeg -i bunny.mp4
+  Duration: 00:01:00.10 ...
+  Stream #0:0(eng): Audio: aac ... 22050 Hz, stereo, ... 65 kb/s
+  Stream #0:1(eng): Video: h264 ... 640x360, 612 kb/s, 23.96 fps ...
+        </code></pre>
+      </section>
+      <section>
+        <h2>Multiplexing</h2>
+        <p>aka muxing</p>
+        <pre><code class="lasso">
+  $ ffmpeg -i bunny.mp4
+  Stream #0:0(eng): Audio: aac ... 22050 Hz, stereo, ... 65 kb/s
+  Stream #0:1(eng): Video: h264 ... 640x360, 612 kb/s, 23.96 fps ...
+  Stream #0:2(eng): Data: none (rtp  / 0x20707472), 45 kb/s
+  Stream #0:3(eng): Data: none (rtp  / 0x20707472), 5 kb/s
+
+  $ ffmpeg -i bunny.mp4 -map 0:0 -map 0:1 -c copy bunny_clean.mp4
+
+  $ ffmpeg -i bunny_clean.mp4
+  Stream #0:0(eng): Audio: aac ... 22050 Hz, stereo, ... 65 kb/s
+  Stream #0:1(eng): Video: h264 ... 640x360, 612 kb/s, 23.96 fps ...
+        </code></pre>
+      </section>
+    </section>
+    <section>
+      <section>
+        <h2>Audio &amp; Video Tags</h2>
+      </section>
+      <section>
+        <h2>AudioStream</h2>
+        <p><a href="https://github.com/nickdesaulniers/audiostream">A long time ago, I wanted to build iTunes in the browser.</a></p>
+        <img src="audiostream2.png" alt="audio stream application"/>
+      </section>
+      <section>
+        <h2>AudioStream</h2>
+        <img src="audiostream-arch.png" alt="Diagram of the architecture of audiostream"/>
+      </section>
+      <section>
+        <h2>Byte Range Requests</h2>
+        <p>A browser will make Byte Range Requests on behalf of a media element to
+        buffer content.</p>
+        <small>
+          <p>Request Headers:</p>
+          <ul>
+            <li>Range: bytes=0-</li>
+          </ul>
+          <p>Response Headers:</p>
+          <ul>
+            <li>Content-Length: 1024</li>
+            <li>Content-Range: 0-1023:4096</li>
+          </ul>
+        </small>
+      </section>
+      <section>
+        <h2>What if we want finer grain control over loading assets?</h2>
+        <p class="fragment">Why?</p>
+        <p class="fragment">Video is easily an order of magnitude larger in file size than audio.</p>
+        <p class="fragment">Waste of bandwidth if user downloads entire file, but watches only a part.</p>
+      </section>
+      <section>
+        <h2>Binary Data</h2>
+        <pre><code class="javascript">
+  var xhr = new XMLHttpRequest;
+  xhr.open('GET', 'song.mp3');
+  xhr.responseType = 'arraybuffer';
+  xhr.onload = function () {
+    var audio = new Audio;
+    audio.src = URL.createObjectURL(new Blob([xhr.response], {
+      type: 'audio/mpeg' }));
+    audio.oncanplaythrough = audio.play.bind(audio);
+  };
+  xhr.send();
+        </code></pre>
+        <p class="fragment">plus byte range requests?</p>
+      </section>
+      <section>
+        <h2>Binary data + byte range requests</h2>
+        <p>
+          Audio tags don't let us combine arraybuffers, they require one
+          contiguous arraybuffer. Web Audio API can help here.
+        </p>
+        <p class="fragment">But...</p>
+        <p class="fragment">
+          Results in audible clicks between segments. Finding the proper range
+          to segment by is very difficult.  Web Audio API does not help here.
+        </p>
+      </section>
+    </section>
+    <section>
+      <section>
+        <h2>MSE</h2>
+      </section>
+      <section>
+        <h2>Browser Support</h2>
+        <small>MediaSource.isTypeSupported()</small>
+        <small>
+          <a href="http://www.w3.org/TR/media-source/byte-stream-format-registry.html">MSE Byte Stream Format Registry</a>,
+        </small>
+        <small>
+          <a href="http://www.leanbackplayer.com/test/h5mt.html">Notes</a>
+        </small>
+        <table style="transform: scale(0.75) translateX(-6em);">
+          <thead>
+            <tr>
+              <th>Browser</th>
+              <th>video/mp4</th>
+              <th>video/webm</th>
+              <th>video/mp2t</th>
+              <th>audio/mpeg</th>
+              <th>audio/aac</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Chrome<small style="vertical-align: baseline;">45</small></td>
+              <td class="lime">&#10003;</td>
+              <td class="lime">&#10003;*</td>
+              <td class="red">&#10007;</td>
+              <td class="lime">&#10003;</td>
+              <td class="lime">&#10003;</td>
+            </tr>
+            <tr>
+              <td>Firefox <small style="vertical-align: baseline;">38</small></td>
+              <td class="lime">&#10003;**</td>
+              <td class="red">&#10007;</td>
+              <td class="red">&#10007;</td>
+              <td class="red">&#10007;</td>
+              <td class="red">&#10007;</td>
+            </tr>
+            <tr>
+              <td>IE <small style="vertical-align: baseline;">11</style></td>
+              <td class="lime">&#10003;</td>
+              <td class="red">&#10007;</td>
+              <td class="lime">&#10003;</td>
+              <td class="red">&#10007;</td>
+              <td class="lime">&#10003;</td>
+            </tr>
+            <tr>
+              <td>Opera <small style="vertical-align: baseline;">30</small></td>
+              <td class="lime">&#10003;*</td>
+              <td class="lime">&#10003;*</td>
+              <td class="red">&#10007;</td>
+              <td class="red">&#10007;</td>
+              <td class="red">&#10007;</td>
+            </tr>
+            <tr>
+              <td>Safari <small style="vertical-align: baseline;">8</small></td>
+              <td class="lime">&#10003;*</td>
+              <td class="red">&#10007;</td>
+              <td class="red">&#10007;</td>
+              <td class="red">&#10007;</td>
+              <td class="red">&#10007;</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="margin-top: -1em;">
+        <small>* Needs codec specified MediaSource.isTypeSupported('mime; codecs=""'); <a href="https://wiki.whatwg.org/wiki/Video_type_parameters#MPEG-4">List</a></small>
+        <small>** whitelisted to very few sites like YouTube, FF 38-41/42? Test in Nightly, media.mediasource.whitelist -&gt; false in about:config</small>
+        </p>
+      </section>
+      <section>
+        <h2>A note about mp4</h2>
+        <p>mp4 needs to be "fragmented." <a href="http://www.w3.org/TR/media-source/isobmff-byte-stream-format.html#iso-init-segments">From ISO BMFF Byte Stream Format &sect;3</a>:</p>
+        <blockquote>An ISO BMFF initialization segment is defined in this specification as a single File Type Box (<span class="lime">ftyp</span>) followed by a single Movie Header Box (<span class="lime">moov</span>).</blockquote>
+        <p class="fragment">wut?</p>
+      </section>
+      <section>
+        <h4>How to check if your mp4 is properly fragmented</h4>
+        <p>I highly recommend <a href="https://github.com/axiomatic-systems/Bento4">axiomatic-systems/Bento4</a> on GitHub.</p>
+        <pre>
+  $ ./mp4dump ~/Movies/devtools.mp4 | head
+  [<span class="red">ftyp</span>] size=8+24
+    ...
+  [<span class="red">free</span>] size=8+0
+  [<span class="red">mdat</span>] size=8+85038690
+  [<span class="red">moov</span>] size=8+599967
+    ...
+          </pre>
+          <p class="fragment">...<span class="lime">ftype</span> followed by a single <span class="lime">moov</span>...</p>
+      </section>
+      <section>
+        <h4>How to make your mp4 properly fragmented</h4>
+        <pre>
+  $ ./mp4fragment ~/Movies/devtools.mp4 devtools_fragmented.mp4
+  $ ./mp4dump devtools_fragmented.mp4 | head
+  [<span class="lime">ftyp</span>] size=8+28
+    ...
+  [<span class="lime">moov</span>] size=8+1109
+    ...
+  [<span class="orange">moof</span>] size=8+600
+    ...
+  [<span class="orange">mdat</span>] size=8+138679
+  [<span class="orange">moof</span>] size=8+536
+    ...
+  [<span class="orange">mdat</span>] size=8+24490
+    ...
+  ...
+        </pre>
+        <p>...<span class="lime">ftype</span> followed by a single <span class="lime">moov</span>...</p>
+        <p>You'll also notice multiple <span class="orange">moof</span>/<span class="orange">mdat</span> pairs.</p>
+        <p>When transcoding with ffmpeg, you'll want the flag: -movflags frag_keyframe+empty_moov</p>
+      </section>
+      <section>
+        <h2>HTMLMediaElement</h2>
+        <img src="audio_tag.png" alt="audio tag url relationship"/>
+      </section>
+      <section>
+        <h2>Media Source Extensions</h2>
+        <img src="mse_rel.png" alt="media source extension relationship"/>
+      </section>
+      <section>
+        <h2>MSE pseudocode</h2>
+        <pre><code class="coffeescript">
+  m = MediaSource
+  m.onsourceopen = () =&gt;
+    s = m.addSourceBuffer 'codec'
+    s.onupdateend = () =&gt;
+      if numChunks === totalChunks
+        m.endOfStream()
+      else
+        s.appendBuffer nextChunk
+    s.appendBuffer arrayBufferOfContent
+  video.src = URL.createObjectURL m
+        </code></pre>
+      </section>
+      <section>
+        <h2><a href="demo/bufferAll.html">Demo: buffer ASAP</a></h2>
+      </section>
+      <section>
+        <h2><a href="demo/bufferWhenNeeded.html">Demo: Buffer just in time</a></h2>
+      </section>
+    </section>
+    <section>
+      <section>
+        <h2>DASH</h2>
+      </section>
+      <section>
+        <h2>Adaptive Bitrate Streaming</h2>
+        <img src="abs_ema.png" alt="the gist of serving a segment of certain quality based on an exponential moving average of the measured bandwidth"/>
+      </section>
+      <section>
+        <h2>Asset pipeline</h2>
+        <img src="asset_pipeline.png" alt="How to generate all of the assets">
+      </section>
+      <section>
+        <h2>Browser caching</h2>
+        <p>Some browsers over-aggresively cache CORS related content.</p>
+        <p>In Safari, Develop &gt; Empty Caches or Disable Caches</p>
+        <p>In Firefox 41, enable private browsing.</p>
+      </section>
+      <section>
+        <h2>DASH demo</h2>
+        <p>bugs</p>
+        <ul>
+          <li>
+            <a href="https://github.com/Dash-Industry-Forum/dash.js/issues/492">dash.js &amp; Safari</a>
+          </li>
+          <li>
+            <a href="https://github.com/google/shaka-player/issues/101">shaka &amp; Firefox</a>
+          </li>
+        </ul>
+      </section>
+      <section>
+        <h2>Live streaming</h2>
+        <a href="http://www.w3.org/TR/media-source/#widl-SourceBuffer-appendStream-void-ReadableStream-stream-unsigned-long-long-maxSize">SourceBuffer.prototype.appendStream</a>
+      </section>
+    </section>
+</div>
+
+<script src="reveal.js-3.1.0/lib/js/head.min.js"></script>
+<script src="reveal.js-3.1.0/js/reveal.js"></script>
+
+<script>
+
+// Full list of configuration options available at:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+  controls: true,
+  progress: true,
+  history: true,
+  center: true,
+
+  transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+  // Optional reveal.js plugins
+  dependencies: [
+    { src: 'reveal.js-3.1.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+    //{ src: 'reveal.js-3.1.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+    //{ src: 'reveal.js-3.1.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+    { src: 'reveal.js-3.1.0/plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+    //{ src: 'reveal.js-3.1.0/plugin/zoom-js/zoom.js', async: true },
+    //{ src: 'reveal.js-3.1.0/plugin/notes/notes.js', async: true }
+  ]
+});
+
+</script>
+
+</body>
+</html>
